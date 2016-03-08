@@ -20,10 +20,11 @@ Not working:
 
 To build using Docker, you can use this command to build guest system:
 ```
+cd [project root]
 docker build -t dor/dor:qviewer .
 ```
-And then this to compile executable:
+And then to compile executable:
 ```
 docker run -it -v `pwd`:/opt/jenkins-qviewer -u $(id -u):$(id -g) dor/dor:qviewer
 ```
-It will create a `build` folder insidte project's root folder with all cmake and make output.
+It will create a `build` folder inside project's root folder with all cmake and make output.
