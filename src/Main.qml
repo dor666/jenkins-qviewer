@@ -19,6 +19,10 @@ ApplicationWindow {
             radius: 5
 
             Rectangle {
+                id: animatedRectangle
+                property color fromColor : parent.color
+                property color toColor : Qt.lighter(parent.color)
+
                 anchors.left: parent.left
                 height: parent.height
                 width: parent.width * modelData.buildProgress
@@ -26,15 +30,16 @@ ApplicationWindow {
 
                 SequentialAnimation on color {
                     loops: Animation.Infinite
+                    running: modelData.running
 
                     ColorAnimation {
-                        from: modelData.color
-                        to: Qt.lighter(modelData.color)
+                        from: animatedRectangle.fromColor
+                        to: animatedRectangle.toColor
                         duration: 1000
                     }
                     ColorAnimation {
-                        from: Qt.lighter(modelData.color)
-                        to: modelData.color
+                        from: animatedRectangle.toColor
+                        to: animatedRectangle.fromColor
                         duration: 1000
                     }
                 }

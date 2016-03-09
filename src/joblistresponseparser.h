@@ -19,7 +19,7 @@ class Job : public QObject
     Q_PROPERTY(float buildProgress READ getBuildProgress WRITE setBuildProgress NOTIFY buildProgressChanged)
 
     QUrl url;
-    QColor color;
+    QColor color = QColor(Qt::gray);
     bool running = false;
     float buildProgress = 0.f;
 

@@ -18,31 +18,7 @@ Item {
             anchors.fill: parent
             anchors.leftMargin: 5
             anchors.topMargin: 5
-            model: ListModel {
-                ListElement {
-                    name: "Grey"
-                    colorCode: "grey"
-                    color: "grey"
-                }
-
-                ListElement {
-                    name: "Red"
-                    colorCode: "red"
-                    color: "red"
-                }
-
-                ListElement {
-                    name: "Blue"
-                    colorCode: "blue"
-                    color: "blue"
-                }
-
-                ListElement {
-                    name: "Green"
-                    colorCode: "green"
-                    color: "green"
-                }
-            }
+            model: ListModel {}
             delegate: Item {
                 x: 5
                 height: 50
