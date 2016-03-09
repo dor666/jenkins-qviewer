@@ -7,8 +7,6 @@ Working:
 
 Not working:
 * SSL broken, will ignore errors and connect anyway.
-* Progress color wrong.
-* Prints bunch of errors at startup (list delegate initialization).
 * Displays all jobs, views not supported yet.
 
 
