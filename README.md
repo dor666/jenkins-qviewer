@@ -10,3 +10,21 @@ Not working:
 * Progress color wrong.
 * Prints bunch of errors at startup (list delegate initialization).
 * Displays all jobs, views not supported yet.
+
+
+## Build (Ubuntu Xenial)
+
+[Dockerfile](Dockerfile) is supplied for Ubuntu Xenial image. If you want to compile this project in Xenial using libraries from repositiores only, check Dockerfile to see what packages you need.
+
+## Build (Docker)
+
+To build using Docker, you can use this command to build guest system:
+```
+cd [project root]
+docker build -t dor/dor:qviewer .
+```
+And then to compile executable:
+```
+docker run -it -v `pwd`:/opt/jenkins-qviewer -u $(id -u):$(id -g) dor/dor:qviewer
+```
+It will create a `build` folder inside project's root folder with all cmake and make output.
