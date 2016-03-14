@@ -1,12 +1,13 @@
 #include "connection.h"
 #include "joblistresponseparser.h"
+#include "qtutils.h"
 
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QSslSocket>
 #include <QSslSocket>
 #include <QSslCipher>
 
-Q_LOGGING_CATEGORY(jConn, "jenkinsQViewer.connection", QtWarningMsg)
+Q_VIEWER_LOGGING_CATEGORY(jConn, "jenkinsQViewer.connection", QtWarningMsg)
 
 namespace jenkinsQViewer
 {
@@ -52,6 +53,15 @@ Connection::Connection(QNetworkAccessManager *_networkManager,
     createSslConfiguration();
 }
 
+QString isSelfSigned(const QSslCertificate& cert)
+{
+    #if QT_VERSION >= QT_VERSION_CHECK(5,4,0)
+        return cert.isSelfSigned() ? QStringLiteral("true") : QStringLiteral("false");
+    #else
+        return QStringLiteral("Unable to tell");
+    #endif
+}
+
 void Connection::createSslConfiguration()
 {
     sslConfiguration = QSslConfiguration();
@@ -73,7 +83,7 @@ void Connection::createSslConfiguration()
     expectedSslErrors.clear();
     for(const QSslCertificate& cert : allCerts) {
         qCWarning(jConn) << "is cert null?" << cert.isNull()
-                         << "\nis cert self signed?" << cert.isSelfSigned();
+                         << "\nis cert self signed?" << isSelfSigned(cert);
 
         expectedSslErrors <<
                              QSslError(QSslError::SelfSignedCertificate, cert) <<
