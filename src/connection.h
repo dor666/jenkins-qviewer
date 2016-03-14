@@ -18,9 +18,9 @@ class Connection : public QObject
     QString username;
     QString token;
     QUrl jenkinsRootUrl;
-    QNetworkReply* reply = nullptr;
     QStringList caCerts;
     QMap<QNetworkReply*, QString> jobnamesByProgressReply;
+    QNetworkReply* joblistReply = nullptr;
 
 public:
 
@@ -70,6 +70,8 @@ private:
 
     void dumpCipher(const QSslCipher& _cipher);
     void dumpCertificate(const QSslCertificate& _cert);
+
+    bool awaitingResponse();
 };
 
 }
