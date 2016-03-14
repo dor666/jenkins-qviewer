@@ -103,67 +103,80 @@ void Connection::joblistReplyFinished()
 {
     QNetworkReply* reply =
             qobject_cast<QNetworkReply*>(QObject::sender());
+    Q_ASSERT(joblistReply == reply);
 
-    if(checkReply(reply))
+    if(checkReply(joblistReply))
     {
-        QByteArray responseContent = reply->readAll();
+        QByteArray responseContent = joblistReply->readAll();
         qCDebug(jConn) << "Got response: " << responseContent;
         emit gotReply(responseContent);
     }
-    reply->deleteLater();
+    joblistReply->deleteLater();
+    joblistReply = nullptr;
 }
 
 void Connection::progressReplyFinished()
 {
-    QNetworkReply* reply =
-            qobject_cast<QNetworkReply*>(QObject::sender());
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(QObject::sender());
 
-    QString jobname = jobnamesByProgressReply.take(reply);
-    if(!jobname.isEmpty()){
-        emit progressResponse(jobname, reply->readAll());
-    }
-    else
-    {
-        qCWarning(jConn) << "No jobname for progress reply";
-    }
+    if(reply){
+        QString jobname = jobnamesByProgressReply.take(reply);
+        if(!jobname.isEmpty()){
+            emit progressResponse(jobname, reply->readAll());
+        }
+        else
+        {
+            qCWarning(jConn) << "No jobname for progress reply";
+        }
 
-    reply->deleteLater();
+        reply->deleteLater();
+    }
 }
 
 void Connection::sendJoblistRequest()
 {
+    if(awaitingResponse())
+        return; //Skip if waiting for joblist/progress response.
+
     QNetworkRequest request =
             createNetworkRequest(QStringLiteral("/api/xml"));
 
-    reply = networkManager->get(request);
-    reply->setSslConfiguration(sslConfiguration);
-    reply->ignoreSslErrors(expectedSslErrors); // Not working?
+    joblistReply = networkManager->get(request);
+    joblistReply->setSslConfiguration(sslConfiguration);
+    joblistReply->ignoreSslErrors(expectedSslErrors); // Not working?
 
-    connect(reply, &QNetworkReply::encrypted, this, &Connection::ready);
-    connect(reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(sslErrors(QList<QSslError>)));
-    connect(reply, &QNetworkReply::finished,
+    connect(joblistReply, &QNetworkReply::encrypted, this, &Connection::ready);
+    connect(joblistReply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(sslErrors(QList<QSslError>)));
+    connect(joblistReply, &QNetworkReply::finished,
             this, &Connection::joblistReplyFinished);
 }
 
 void Connection::sslErrors(QList<QSslError> _errors)
 {
-    for(const QSslError& err : _errors)
-    {
-        qCWarning(jConn) << "SslError: " << err.errorString();
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(QObject::sender());
+    if(reply){
+        for(const QSslError& err : _errors)
+        {
+            qCWarning(jConn) << "SslError: " << err.errorString();
+        }
+        reply->ignoreSslErrors(); //@todo fix
     }
-    reply->ignoreSslErrors(); //@todo fix
 }
 
 void Connection::ready()
 {
-    qCDebug(jConn) << " === Peer Certificate ===";
-    QSslCertificate cert = reply->sslConfiguration().peerCertificate();
-    dumpCertificate( cert );
+    QNetworkReply* reply =
+            qobject_cast<QNetworkReply*>(QObject::sender());
+    if(reply){
+        qCDebug(jConn) << " === Peer Certificate ===";
+        QSslCertificate cert = reply->sslConfiguration().peerCertificate();
+        dumpCertificate( cert );
 
-    QSslCipher cipher = reply->sslConfiguration().sessionCipher();
-    dumpCipher( cipher );
+        QSslCipher cipher = reply->sslConfiguration().sessionCipher();
+        dumpCipher( cipher );
 
-    qCDebug(jConn) << "Done";
+        qCDebug(jConn) << "Done";
+    }
 }
 
 void Connection::requestJobProgress(const QString &_jobName)
@@ -172,7 +185,7 @@ void Connection::requestJobProgress(const QString &_jobName)
             createNetworkRequest(QStringLiteral("/job/%1/lastBuild/api/xml?depth=1&xpath=*/executor/progress/text()")
                                  .arg(_jobName));
 
-    reply = networkManager->get(request);
+    QNetworkReply* reply = networkManager->get(request);
     reply->setSslConfiguration(sslConfiguration);
     reply->ignoreSslErrors(expectedSslErrors); // Not working?
 
@@ -246,6 +259,12 @@ void Connection::dumpCertificate( const QSslCertificate& _cert )
                    << "\n== Certificate =="
                    << "\nEffective Date:\t\t" << _cert.effectiveDate().toString()
                    << "\nExpiry Date:\t\t" << _cert.expiryDate().toString();
+}
+
+bool Connection::awaitingResponse()
+{
+    return joblistReply != nullptr ||
+            !jobnamesByProgressReply.empty();
 }
 
 }
