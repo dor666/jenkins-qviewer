@@ -107,6 +107,8 @@ private:
     void readHudsonElement();
 
     QList<Job *>::iterator findJobByName(const QString &_jobName);
+    bool parseFreeStyleBuildProgressResponse(int &progress);
+    bool parseExecutorProgressResponse(int& progress);
 };
 
 }

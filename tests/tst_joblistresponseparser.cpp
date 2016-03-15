@@ -105,6 +105,6 @@ TEST(JoblistResponseParser, will_set_progress)
     jobs.append(job);
     JoblistResponseParser parser(jobs);
     QString response = QString::fromUtf8(progressResponse);
-    parser.parseJoblistResponse(response);
+    parser.parseProgressResponse(job->objectName(), response.toUtf8());
     EXPECT_FLOAT_EQ(0.38f, job->getBuildProgress());
 }
