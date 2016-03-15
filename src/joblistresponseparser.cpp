@@ -1,8 +1,9 @@
 #include "joblistresponseparser.h"
 
+#include "qtutils.h"
 #include <QtQml>
 
-Q_LOGGING_CATEGORY(jRParser, "jenkinsQViewer.responseParser", QtWarningMsg)
+Q_VIEWER_LOGGING_CATEGORY(jRParser, "jenkinsQViewer.responseParser", QtWarningMsg)
 
 void initResources()
 {
@@ -87,7 +88,7 @@ void JoblistResponseParser::parseJoblistResponse(const QString &_response)
     reader.addData(_response);
 
     while (!reader.atEnd()) {
-        qCInfo(jRParser) << reader.name();
+        qVCInfo(jRParser) << reader.name();
         if(reader.isStartElement()){
             if(reader.name() == QStringLiteral("hudson")){
                 readHudsonElement();
@@ -149,7 +150,7 @@ QColor JoblistResponseParser::convertColor(QString _color)
     else if(_color == QStringLiteral("disabled"))
         return Qt::lightGray;
     else {
-        qCInfo(jRParser) << "Unrecognized color parsed: " << _color;
+        qVCInfo(jRParser) << "Unrecognized color parsed: " << _color;
         return Qt::darkGray;
     }
 }
@@ -175,17 +176,17 @@ void JoblistResponseParser::readJobElement()
             QString text = reader.readElementText(QXmlStreamReader::SkipChildElements);
             if(elementName == "name")
             {
-                qCInfo(jRParser) << "Job name" << text;
+                qVCInfo(jRParser) << "Job name" << text;
                 job = findOrCreateJob(text);
             }
             else if(job && elementName == "url")
             {
-                qCInfo(jRParser) << "Job url" << text;
+                qVCInfo(jRParser) << "Job url" << text;
                 job->setUrl(text);
             }
             else if(job && elementName == "color")
             {
-                qCInfo(jRParser) << "Job color" << text;
+                qVCInfo(jRParser) << "Job color" << text;
                 job->setColor(convertColor(text));
                 bool running = isRunning(text);
                 job->setRunning(running);

@@ -8,7 +8,7 @@ endforeach(package)
 
 set(QML_FILES
     Main.qml
-    MainForm.ui.qml
+    MainForm.qml
 )
 
 set(RESOURCES
@@ -21,6 +21,7 @@ add_library(${PROJECT_LIB_NAME} STATIC
     connection.h
     joblistresponseparser.cpp
     joblistresponseparser.h
+    qtutils.h
     ${RESOURCE_ADDED}
     ${QML_FILES}
 )

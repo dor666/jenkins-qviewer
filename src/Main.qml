@@ -1,7 +1,7 @@
-import QtQuick 2.5
+import QtQuick 2.3
 import QtQuick.Window 2.0
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls 1.2
+import QtQuick.Controls.Styles 1.2
 import "."
 
 
@@ -63,6 +63,8 @@ ApplicationWindow {
             var columns = 3 //!@todo temp
             grid.cellWidth = grid.width / columns
             var rows = grid.count / columns
+            if(grid.count % columns)
+                ++rows
             grid.cellHeight = grid.height / rows
         }
 
@@ -75,6 +77,7 @@ ApplicationWindow {
         target: parser
         onNewJobAdded: {
             form.grid.model = parser.jobs
+            form.onWidthChanged()
         }
     }
 }

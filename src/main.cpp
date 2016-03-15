@@ -1,5 +1,6 @@
 #include "connection.h"
 #include "joblistresponseparser.h"
+#include "qtutils.h"
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -38,11 +39,9 @@ CommandLineParseResult parseCommandLine(QCommandLineParser &parser, Options *opt
     const QCommandLineOption tokenOption = QCommandLineOption("token",
                 QCoreApplication::translate("main", "User token, must be specified if 'username' is set."),
                 "string");
-    bool result = parser.addOptions(QList<QCommandLineOption>{
-                                        caCertOption,
-                                        usernameOption,
-                                        tokenOption
-                                    });
+    bool result = parser.addOption(caCertOption) &&
+            parser.addOption(usernameOption) &&
+            parser.addOption(tokenOption);
     Q_ASSERT(result);
 
     parser.addPositionalArgument("host", QCoreApplication::translate("main", "Jenkins Host URL with port, ex. http://localhost:8080"));
@@ -139,7 +138,7 @@ using namespace jenkinsQViewer::consoleViewer;
 
 int main(int _argc, char** _argv)
 {
-    qInfo() << "Starting\n";
+    qDebug() << "Starting\n";
 
     QGuiApplication app(_argc, _argv);
     QCoreApplication::setApplicationName("jenkins-qviewer");
@@ -158,7 +157,7 @@ int main(int _argc, char** _argv)
     case CommandLineOk:
         return startConsoleMonitor(app, options);
     case CommandLineError:
-        qCritical().noquote() << errorMessage;
+        qCritical() << errorMessage;
         cmdParser.showHelp(1);
         Q_UNREACHABLE();
     case CommandLineVersionRequested:
