@@ -73,11 +73,17 @@ ApplicationWindow {
         }
     }
 
-    Connections {
-        target: parser
-        onNewJobAdded: {
+    Timer {
+        id: deferJobListChanged
+        interval: 1; running: false; repeat: false
+        onTriggered: {
+            console.log("New job(s) added, refreshing list")
             form.grid.model = parser.jobs
             form.onWidthChanged()
         }
+    }
+    Connections {
+        target: parser
+        onNewJobAdded: deferJobListChanged.start()
     }
 }
