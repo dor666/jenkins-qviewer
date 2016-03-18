@@ -192,7 +192,7 @@ void Connection::ready()
 void Connection::requestJobProgress(const QString &_jobName)
 {
     QNetworkRequest request =
-            createNetworkRequest(QStringLiteral("/job/%1/lastBuild/api/xml?depth=1&xpath=*/executor/progress/text()")
+            createNetworkRequest(QStringLiteral("/job/%1/lastBuild/api/xml?depth=1")
                                  .arg(_jobName));
 
     QNetworkReply* reply = networkManager->get(request);

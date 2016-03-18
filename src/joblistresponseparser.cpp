@@ -101,12 +101,79 @@ void JoblistResponseParser::parseJoblistResponse(const QString &_response)
     }
 }
 
+bool JoblistResponseParser::parseExecutorProgressResponse(int& progress)
+{
+    reader.readNext();
+    while (!reader.atEnd()) {
+        if(reader.isEndElement()) {
+            reader.readNext();
+            break;
+        }
+        if(reader.isStartElement()) {
+            if(reader.name() == QStringLiteral("progress")) {
+                QString text = reader.readElementText(QXmlStreamReader::SkipChildElements);
+                bool responseOk;
+                progress = text.toInt(&responseOk);
+                return responseOk;
+            }
+            else {
+                skipUnknownElement();
+            }
+        }
+        else {
+            reader.readNext();
+        }
+    }
+    return false;
+}
+
+bool JoblistResponseParser::parseFreeStyleBuildProgressResponse(int& progress)
+{
+    reader.readNext();
+    while (!reader.atEnd()) {
+        if(reader.isEndElement()) {
+            reader.readNext();
+            break;
+        }
+        if(reader.isStartElement()){
+            if(reader.name() == QStringLiteral("executor")) {
+                return parseExecutorProgressResponse(progress);
+            }
+            else {
+                skipUnknownElement();
+            }
+        }
+        else {
+            reader.readNext();
+        }
+    }
+    return false;
+}
+
 void JoblistResponseParser::parseProgressResponse(
         const QString& _jobName, const QByteArray& reply)
 {
     QList<Job*>::iterator job = findJobByName(_jobName);
-    bool responseOk;
-    int progress = reply.toInt(&responseOk);
+    bool responseOk = false;
+    int progress = 0;
+
+    reader.clear();
+    reader.addData(reply);
+
+    while(!reader.atEnd()) {
+        if(reader.isStartElement()){
+            if(reader.name() == QStringLiteral("freeStyleBuild")) {
+                responseOk = parseFreeStyleBuildProgressResponse(progress);
+            }
+            else {
+                skipUnknownElement();
+            }
+        }
+        else {
+            reader.readNext();
+        }
+    }
+
     if(responseOk && job != jobs.end()){
         (*job)->setBuildProgress((float)progress/100.f);
     }
